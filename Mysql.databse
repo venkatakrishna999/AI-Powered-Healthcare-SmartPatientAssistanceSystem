@@ -1,0 +1,15 @@
+create database healthcare_db;
+
+use healthcare_db;
+
+select * from appointments;
+
+select * from doctors;
+
+select * from patients;
+
+select * from doctor_availability;
+
+select * from medical_history;
+
+select * from medical_reports;
