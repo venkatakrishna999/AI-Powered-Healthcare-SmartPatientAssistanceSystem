@@ -56,10 +56,16 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
 
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/login").permitAll()
-                .requestMatchers("/api/users/register").permitAll()
-                .anyRequest().authenticated()
-            )
+            	    .requestMatchers(
+            	        "/api/auth/login",
+            	        "/api/users/register",
+            	        "/v3/api-docs/**",
+            	        "/v3/api-docs",
+            	        "/swagger-ui/**",
+            	        "/swagger-ui.html"
+            	    ).permitAll()
+            	    .anyRequest().authenticated()
+            	)
 
             .exceptionHandling(exception -> exception
                 .authenticationEntryPoint((request, response, authException) ->
