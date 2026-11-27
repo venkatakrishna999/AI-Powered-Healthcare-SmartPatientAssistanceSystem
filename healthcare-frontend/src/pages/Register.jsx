@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { registerUser } from '../services/authService';
 
 function Register() {
@@ -140,6 +141,11 @@ function Register() {
                             </button>
 
                         </form>
+
+                        <p className="text-center mt-3">
+                            Already have an account?{' '}
+                            <Link to="/login">Login</Link>
+                        </p>
 
                     </div>
 
