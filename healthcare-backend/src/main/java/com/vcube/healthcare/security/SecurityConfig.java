@@ -1,7 +1,5 @@
 package com.vcube.healthcare.security;
 
-import java.util.List;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -27,32 +25,6 @@ public class SecurityConfig {
     private final CustomUserDetailsService userDetailsService;
 
     private final PasswordEncoder passwordEncoder;
-
-    // CORS Configuration
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-
-        CorsConfiguration configuration = new CorsConfiguration();
-
-        configuration.setAllowedOrigins(
-            List.of("https://healthcare-frontend-dxym.onrender.com")
-        );
-
-        configuration.setAllowedMethods(
-            List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
-        );
-
-        configuration.setAllowedHeaders(List.of("*"));
-
-        configuration.setAllowCredentials(false);
-
-        UrlBasedCorsConfigurationSource source =
-                new UrlBasedCorsConfigurationSource();
-
-        source.registerCorsConfiguration("/**", configuration);
-
-        return source;
-    }
 
     // Authentication Provider
     @Bean
