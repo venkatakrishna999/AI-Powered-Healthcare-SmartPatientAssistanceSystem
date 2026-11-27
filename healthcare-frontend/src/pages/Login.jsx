@@ -30,7 +30,8 @@ function Login() {
         try {
             const response = await loginUser(loginData);
 
-            localStorage.setItem('token', response.data.token);
+           localStorage.setItem('token', response.data.token);
+           localStorage.setItem('userId', response.data.userId);
 
             setMessage('Login successful!');
 
