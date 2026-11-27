@@ -56,17 +56,40 @@ public class SecurityConfig {
             .cors(Customizer.withDefaults())
             .csrf(csrf -> csrf.disable())
 
-            .authorizeHttpRequests(auth -> auth
-            	    .requestMatchers(
-            	        "/api/auth/login",
-            	        "/api/users/register",
-            	        "/v3/api-docs/**",
-            	        "/v3/api-docs",
-            	        "/swagger-ui/**",
-            	        "/swagger-ui.html"
-            	    ).permitAll()
-            	    .anyRequest().authenticated()
-            	)
+.authorizeHttpRequests(auth -> auth
+
+    // Public APIs
+    .requestMatchers(
+        "/api/auth/login",
+        "/api/users/register",
+        "/v3/api-docs/**",
+        "/v3/api-docs",
+        "/swagger-ui/**",
+        "/swagger-ui.html"
+    ).permitAll()
+
+    // Only ADMIN can add, update and delete doctors
+    .requestMatchers(
+        org.springframework.http.HttpMethod.POST,
+        "/api/doctors"
+    ).hasRole("ADMIN")
+
+    .requestMatchers(
+        org.springframework.http.HttpMethod.PUT,
+        "/api/doctors/**"
+    ).hasRole("ADMIN")
+
+    .requestMatchers(
+        org.springframework.http.HttpMethod.DELETE,
+        "/api/doctors/**"
+    ).hasRole("ADMIN")
+
+    // All authenticated users can view doctors
+    .requestMatchers("/api/doctors/**").authenticated()
+
+    // All other APIs require authentication
+    .anyRequest().authenticated()
+)
 
             .exceptionHandling(exception -> exception
                 .authenticationEntryPoint((request, response, authException) ->
