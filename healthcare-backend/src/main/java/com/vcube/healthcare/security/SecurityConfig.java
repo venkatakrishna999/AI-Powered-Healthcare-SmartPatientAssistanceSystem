@@ -1,18 +1,16 @@
 package com.vcube.healthcare.security;
-import org.springframework.security.config.Customizer;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-
 import org.springframework.security.crypto.password.PasswordEncoder;
-
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -32,8 +30,9 @@ public class SecurityConfig {
     @Bean
     public AuthenticationProvider authenticationProvider() {
 
-    	DaoAuthenticationProvider provider =
-    	        new DaoAuthenticationProvider(userDetailsService);
+        DaoAuthenticationProvider provider =
+                new DaoAuthenticationProvider(userDetailsService);
+
         provider.setPasswordEncoder(passwordEncoder);
 
         return provider;
@@ -56,45 +55,60 @@ public class SecurityConfig {
             .cors(Customizer.withDefaults())
             .csrf(csrf -> csrf.disable())
 
-.authorizeHttpRequests(auth -> auth
+            .authorizeHttpRequests(auth -> auth
 
-    // Public APIs
-    .requestMatchers(
-        "/api/auth/login",
-        "/api/users/register",
-        "/v3/api-docs/**",
-        "/v3/api-docs",
-        "/swagger-ui/**",
-        "/swagger-ui.html"
-    ).permitAll()
+                // Public APIs
+                .requestMatchers(
+                    "/api/auth/login",
+                    "/api/users/register",
+                    "/v3/api-docs/**",
+                    "/v3/api-docs",
+                    "/swagger-ui/**",
+                    "/swagger-ui.html"
+                ).permitAll()
 
-    // Only ADMIN can add, update and delete doctors
-    .requestMatchers(
-        org.springframework.http.HttpMethod.POST,
-        "/api/doctors"
-    ).hasRole("ADMIN")
+                // Only ADMIN can add doctors
+                .requestMatchers(HttpMethod.POST, "/api/doctors")
+                .hasRole("ADMIN")
 
-    .requestMatchers(
-        org.springframework.http.HttpMethod.PUT,
-        "/api/doctors/**"
-    ).hasRole("ADMIN")
+                // Only ADMIN can update doctors
+                .requestMatchers(HttpMethod.PUT, "/api/doctors/**")
+                .hasRole("ADMIN")
 
-    .requestMatchers(
-        org.springframework.http.HttpMethod.DELETE,
-        "/api/doctors/**"
-    ).hasRole("ADMIN")
+                // Only ADMIN can delete doctors
+                .requestMatchers(HttpMethod.DELETE, "/api/doctors/**")
+                .hasRole("ADMIN")
 
-    // All authenticated users can view doctors
-    .requestMatchers("/api/doctors/**").authenticated()
+                // All authenticated users can view doctors
+                .requestMatchers("/api/doctors/**")
+                .authenticated()
 
-    // All other APIs require authentication
-    .anyRequest().authenticated()
-)
+                // Only ADMIN can view all users
+                .requestMatchers(HttpMethod.GET, "/api/users")
+                .hasRole("ADMIN")
+
+                // Only ADMIN can update users
+                .requestMatchers(HttpMethod.PUT, "/api/users/**")
+                .hasRole("ADMIN")
+
+                // Only ADMIN can delete users
+                .requestMatchers(HttpMethod.DELETE, "/api/users/**")
+                .hasRole("ADMIN")
+
+                // Authenticated users can access other user endpoints
+                .requestMatchers("/api/users/**")
+                .authenticated()
+
+                // All remaining APIs require authentication
+                .anyRequest().authenticated()
+            )
 
             .exceptionHandling(exception -> exception
+
                 .authenticationEntryPoint((request, response, authException) ->
                     response.setStatus(401)
                 )
+
                 .accessDeniedHandler((request, response, accessDeniedException) ->
                     response.setStatus(403)
                 )
