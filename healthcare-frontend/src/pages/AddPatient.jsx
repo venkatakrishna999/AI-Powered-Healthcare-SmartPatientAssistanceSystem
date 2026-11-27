@@ -30,8 +30,8 @@ function AddPatient() {
         e.preventDefault();
         setError('');
 
-       const patientData = {
-    userId: Number(patient.userId),
+      const patientData = {
+    userId: Number(localStorage.getItem('userId')),
     firstName: patient.firstName,
     lastName: patient.lastName,
     dateOfBirth: patient.dateOfBirth || null,
@@ -72,17 +72,7 @@ function AddPatient() {
 
                     <div className="row">
 
-                        <div className="col-md-6 mb-3">
-                            <label>User ID</label>
-                            <input
-                                type="number"
-                                name="userId"
-                                className="form-control"
-                                value={patient.userId}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
+                       
 
                         <div className="col-md-6 mb-3">
                             <label>First Name</label>
