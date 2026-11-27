@@ -3,6 +3,9 @@ FROM maven:3.9.11-eclipse-temurin-25 AS build
 
 WORKDIR /app
 
+# Configure Google Maven Central mirror
+COPY settings.xml /root/.m2/settings.xml
+
 COPY pom.xml .
 COPY src ./src
 
