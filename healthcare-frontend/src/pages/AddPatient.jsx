@@ -6,8 +6,7 @@ function AddPatient() {
 
     const navigate = useNavigate();
 
-    const [patient, setPatient] = useState({
-        userId: '',
+   const [patient, setPatient] = useState({
         firstName: '',
         lastName: '',
         dateOfBirth: '',
