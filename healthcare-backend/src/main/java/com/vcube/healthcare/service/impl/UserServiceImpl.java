@@ -1,11 +1,13 @@
 package com.vcube.healthcare.service.impl;
 
 import java.util.List;
-import com.vcube.healthcare.entity.Role;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.vcube.healthcare.dto.UserRequestDTO;
+import com.vcube.healthcare.dto.UserResponseDTO;
+import com.vcube.healthcare.entity.Role;
 import com.vcube.healthcare.entity.User;
 import com.vcube.healthcare.repository.UserRepository;
 import com.vcube.healthcare.service.UserService;
@@ -19,9 +21,33 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    // Convert User Entity to UserResponseDTO
+    private UserResponseDTO convertToDTO(User user) {
+
+        UserResponseDTO dto = new UserResponseDTO();
+
+        dto.setUserId(user.getUserId());
+        dto.setUsername(user.getUsername());
+        dto.setEmail(user.getEmail());
+        dto.setRole(user.getRole());
+        dto.setEnabled(Boolean.TRUE.equals(user.getEnabled()));
+        dto.setCreatedAt(user.getCreatedAt());
+
+        return dto;
+    }
+
+    // Find User Entity By ID
+    private User findUserById(Long userId) {
+
+        return userRepository.findById(userId)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "User not found with ID: " + userId));
+    }
+
     // Register User
     @Override
-    public User registerUser(UserRequestDTO userRequestDTO) {
+    public UserResponseDTO registerUser(UserRequestDTO userRequestDTO) {
 
         if (userRepository.existsByUsername(userRequestDTO.getUsername())) {
             throw new RuntimeException("Username already exists");
@@ -35,68 +61,83 @@ public class UserServiceImpl implements UserService {
 
         user.setUsername(userRequestDTO.getUsername());
         user.setEmail(userRequestDTO.getEmail());
+
         user.setPassword(
                 passwordEncoder.encode(userRequestDTO.getPassword()));
-             user.setRole(Role.PATIENT);
 
-        // Enable the account by default
+        user.setRole(Role.PATIENT);
         user.setEnabled(true);
 
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+
+        return convertToDTO(savedUser);
     }
 
     // Get User By ID
     @Override
-    public User getUserById(Long userId) {
+    public UserResponseDTO getUserById(Long userId) {
 
-        return userRepository.findById(userId)
-                .orElseThrow(() ->
-                        new RuntimeException("User not found with ID: " + userId));
+        User user = findUserById(userId);
+
+        return convertToDTO(user);
     }
 
     // Get User By Username
     @Override
-    public User getUserByUsername(String username) {
+    public UserResponseDTO getUserByUsername(String username) {
 
-        return userRepository.findByUsername(username)
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(() ->
                         new RuntimeException("User not found: " + username));
+
+        return convertToDTO(user);
     }
 
     // Get All Users
     @Override
-    public List<User> getAllUsers() {
+    public List<UserResponseDTO> getAllUsers() {
 
-        return userRepository.findAll();
+        return userRepository.findAll()
+                .stream()
+                .map(this::convertToDTO)
+                .toList();
     }
 
     // Update User
     @Override
-    public User updateUser(Long userId, User user) {
+    public UserResponseDTO updateUser(Long userId, User user) {
 
-        User existingUser = getUserById(userId);
+        User existingUser = findUserById(userId);
 
         if (user.getUsername() != null) {
+
             userRepository.findByUsername(user.getUsername())
-                    .filter(existing -> !existing.getUserId().equals(userId))
+                    .filter(existing ->
+                            !existing.getUserId().equals(userId))
                     .ifPresent(existing -> {
-                        throw new RuntimeException("Username already exists");
+                        throw new RuntimeException(
+                                "Username already exists");
                     });
 
             existingUser.setUsername(user.getUsername());
         }
 
         if (user.getEmail() != null) {
+
             userRepository.findByEmail(user.getEmail())
-                    .filter(existing -> !existing.getUserId().equals(userId))
+                    .filter(existing ->
+                            !existing.getUserId().equals(userId))
                     .ifPresent(existing -> {
-                        throw new RuntimeException("Email already exists");
+                        throw new RuntimeException(
+                                "Email already exists");
                     });
 
             existingUser.setEmail(user.getEmail());
         }
 
-        if (user.getPassword() != null && !user.getPassword().isBlank()) {
+        if (user.getPassword() != null &&
+                !user.getPassword().isBlank()) {
+
             existingUser.setPassword(
                     passwordEncoder.encode(user.getPassword()));
         }
@@ -106,17 +147,19 @@ public class UserServiceImpl implements UserService {
         }
 
         if (user.getEnabled() != null) {
-       existingUser.setEnabled(user.getEnabled());
-      }
+            existingUser.setEnabled(user.getEnabled());
+        }
 
-        return userRepository.save(existingUser);
+        User updatedUser = userRepository.save(existingUser);
+
+        return convertToDTO(updatedUser);
     }
 
     // Delete User
     @Override
     public void deleteUser(Long userId) {
 
-        User user = getUserById(userId);
+        User user = findUserById(userId);
 
         userRepository.delete(user);
     }
