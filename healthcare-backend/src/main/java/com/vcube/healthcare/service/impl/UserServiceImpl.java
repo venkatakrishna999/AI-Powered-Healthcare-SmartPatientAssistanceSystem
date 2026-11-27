@@ -1,7 +1,7 @@
 package com.vcube.healthcare.service.impl;
 
 import java.util.List;
-
+import com.vcube.healthcare.entity.Role;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -37,7 +37,7 @@ public class UserServiceImpl implements UserService {
         user.setEmail(userRequestDTO.getEmail());
         user.setPassword(
                 passwordEncoder.encode(userRequestDTO.getPassword()));
-        user.setRole(userRequestDTO.getRole());
+             user.setRole(Role.PATIENT);
 
         // Enable the account by default
         user.setEnabled(true);
